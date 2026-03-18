@@ -71,16 +71,59 @@
     .soap-card .bubble-value:hover { transform: scale(1.15); }
     .bubble-pop-active { transform: scale(1.2); }
 
-    /* 5. 小票 Logo 样式 */
+    /* 5. 小票 / Receipt 样式（固定 1340x1670 像素） */
+    .receipt-paper {
+        width: 1340px;
+        height: 1670px;
+        background: #ffffff;
+        overflow: hidden;
+    }
     .receipt-logo { filter: grayscale(1); opacity: 0.8; border: 2px solid #000; }
+
+    /* 截图用的离屏画布：不显示但可渲染 */
+    .capture-stage {
+        position: fixed;
+        left: -20000px;
+        top: 0;
+        opacity: 1;
+        pointer-events: none;
+        z-index: 0;
+    }
+    .invoice-divider { border: 0; border-top: 2px solid #111827; margin: 16px 0 18px; }
+    .invoice-h2 { font-size: 22px; font-weight: 800; margin: 0; }
+    .invoice-sub { font-size: 12px; color: #374151; margin-top: 4px; }
+    .invoice-meta-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #111827; margin-bottom: 6px; }
+    .invoice-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .invoice-table th { text-align: left; font-weight: 800; border-bottom: 1px solid #111827; padding: 8px 6px; }
+    .invoice-table td { border-bottom: 1px solid #e5e7eb; padding: 10px 6px; vertical-align: top; }
+    .invoice-right { text-align: right; }
+    .invoice-center { text-align: center; }
+
+    /* 打印时仅打印小票区域 */
+    @media print {
+        body {
+            background: #ffffff;
+        }
+        body * {
+            visibility: hidden;
+        }
+        #receiptArea, #receiptArea * {
+            visibility: visible;
+        }
+        #receiptArea {
+            position: absolute;
+            inset: 0;
+            margin: 0;
+        }
+    }
 </style>
 </head>
 <body class="text-slate-800 antialiased overflow-hidden h-screen flex selection:bg-orange-200">
 
     <div id="loginPage" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 p-4">
         <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 md:p-10 text-center">
-            <div class="w-16 h-16 bg-orange-500 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-lg shadow-orange-500/30">
-                <span class="text-white font-black text-2xl italic">4P</span>
+            <div class="w-20 h-20 rounded-full overflow-hidden mx-auto flex items-center justify-center mb-6 shadow-lg shadow-orange-500/30 border-2 border-orange-400 bg-white">
+                <img src="logo.png" alt="4 Paws Canteen Logo" class="w-full h-full object-cover">
             </div>
             <h1 class="text-2xl md:text-3xl font-black tracking-tight mb-2">系统登录 <span class="text-sm text-slate-400 block mt-1 uppercase tracking-widest">System Login</span></h1>
             <div class="space-y-4 mt-8">
@@ -90,7 +133,92 @@
                     <input type="checkbox" id="rememberMe" class="mr-2 rounded text-orange-500 focus:ring-orange-500 w-4 h-4">
                     <label for="rememberMe">记住账号密码 Remember Me</label>
                 </div>
-                <button onclick="handleLogin()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg hover:bg-black active:scale-95 transition-all mt-2">安全登录 Login</button>
+                <button id="loginBtn" onclick="handleLogin()" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl shadow-lg hover:bg-black active:scale-95 transition-all mt-2">安全登录 Login</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="globalLoading" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 flex items-center justify-center">
+        <div class="bg-white rounded-2xl px-4 py-3 text-xs font-bold text-slate-700 shadow-lg flex items-center gap-2">
+            <span class="inline-block w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></span>
+            <span id="globalLoadingText">处理中，请稍候...</span>
+        </div>
+    </div>
+
+    <!-- Offscreen invoice canvas for download -->
+    <div class="capture-stage">
+        <div id="receiptArea" class="receipt-paper">
+            <div style="padding: 56px 70px;">
+                <div style="text-align:center;">
+                    <div style="width:110px;height:110px;margin:0 auto 10px auto;border-radius:9999px;overflow:hidden;border:2px solid #111827;background:#fff;">
+                        <img id="invoiceLogo" alt="4 Paws Canteen" style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <p class="invoice-h2">4 Paws Canteen</p>
+                    <p class="invoice-sub">Address: -</p>
+                    <p class="invoice-sub" style="margin-top:2px;">Contact: -</p>
+                </div>
+
+                <hr class="invoice-divider" />
+
+                <div style="display:flex;justify-content:space-between;gap:24px;">
+                    <div style="flex:1;">
+                        <div class="invoice-meta-title">Customer Details</div>
+                        <div style="font-size:12px;line-height:1.5;color:#111827;">
+                            <div>Name : <b id="r-cust">GUEST</b></div>
+                            <div>Contact : <b id="r-phone">-</b></div>
+                            <div>Address : <b id="r-address">-</b></div>
+                        </div>
+                    </div>
+                    <div style="flex:1;text-align:right;">
+                        <div class="invoice-meta-title">Order Details</div>
+                        <div style="font-size:12px;line-height:1.5;color:#111827;">
+                            <div>Order # : <b id="r-no">INV-0000</b></div>
+                            <div>Date/Time : <b id="r-date">-</b></div>
+                            <div>Option : <b id="r-mode">DELIVERY</b></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top:18px;">
+                    <table class="invoice-table">
+                        <thead>
+                            <tr>
+                                <th style="width:55%;">Description</th>
+                                <th class="invoice-center" style="width:8%;">Qty</th>
+                                <th class="invoice-right" style="width:12%;">Price</th>
+                                <th class="invoice-right" style="width:15%;">Amount (RM)</th>
+                                <th class="invoice-right" style="width:10%;">Tax</th>
+                            </tr>
+                        </thead>
+                        <tbody id="r-items"></tbody>
+                    </table>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:14px;">
+                    <div style="font-size:12px;color:#111827;">
+                        <b>Total Qty:</b> <span id="r-total-qty">0</span>
+                    </div>
+                    <div style="min-width:340px;">
+                        <div style="display:flex;justify-content:space-between;font-size:12px;color:#111827;padding:3px 0;">
+                            <span>Sub-Total</span><span>RM <b id="r-sub">0.00</b></span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:12px;color:#111827;padding:3px 0;">
+                            <span>Delivery Fee</span><span>RM <b id="r-dfee">0.00</b></span>
+                        </div>
+                        <div id="r-disc-row" style="display:none;justify-content:space-between;font-size:12px;color:#b91c1c;font-weight:800;padding:3px 0;">
+                            <span>Discount</span><span>-RM <b id="r-disc-val">0.00</b></span>
+                        </div>
+                        <div style="border-top:2px solid #111827;margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;">
+                            <span style="font-size:14px;font-weight:900;">Grand Total</span>
+                            <span style="font-size:16px;font-weight:900;">RM <span id="r-grand">0.00</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="invoice-divider" style="margin-top:28px;" />
+                <div style="text-align:center;font-size:14px;font-weight:700;color:#111827;margin-top:10px;">
+                    Thank you for shopping with us!
+                </div>
             </div>
         </div>
     </div>
@@ -98,10 +226,12 @@
     <aside id="sidebar" class="bg-slate-900 w-64 text-slate-300 flex-col h-full absolute z-40 md:relative md:translate-x-0 -translate-x-full flex shadow-2xl transition-all duration-300 shrink-0">
         <div class="p-6 flex items-center justify-between border-b border-slate-800/50 shrink-0">
             <div class="flex items-center gap-3 w-full">
-                <div class="logo-icon w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-black italic shadow-lg shadow-orange-500/20 shrink-0">4P</div>
-                <div class="logo-text whitespace-nowrap overflow-hidden">
-                    <span class="text-white font-black tracking-wider uppercase text-sm block leading-none">4 Paws</span>
-                    <span class="text-[10px] text-slate-500 font-bold tracking-widest uppercase">ERP Pro</span>
+                <div class="logo-icon w-10 h-10 rounded-full overflow-hidden border-2 border-orange-400 shadow-lg shadow-orange-500/20 shrink-0 bg-white flex items-center justify-center">
+                    <img src="logo.png" alt="4 Paws Canteen Logo" class="w-full h-full object-cover">
+                </div>
+                <div class="logo-text overflow-hidden">
+                    <span class="block text-[10px] text-slate-400 tracking-[0.25em] uppercase">Backoffice</span>
+                    <span class="block text-slate-900 font-black text-sm leading-tight mt-1 bg-white px-1 rounded">4 Paws Canteen</span>
                 </div>
             </div>
             <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white font-black text-xl">✖</button>
@@ -156,7 +286,7 @@
     <div id="main-content" class="flex-1 flex flex-col h-full relative w-full overflow-hidden transition-all duration-300">
         <header class="md:hidden glass-effect shadow-sm px-4 py-3 flex justify-between items-center z-30 border-b border-slate-200">
             <button onclick="toggleSidebar()" class="text-slate-800 text-2xl font-black p-1">☰</button>
-            <span class="font-black italic text-slate-800 tracking-widest text-lg">4P ERP</span>
+            <span class="font-black italic text-slate-800 tracking-tight text-lg">4 Paws Canteen</span>
             <div class="w-8"></div>
         </header>
 
@@ -190,7 +320,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 soap-card p-6 animate-sticker opacity-0">
                         <h3 class="text-xs font-bold text-slate-500 uppercase mb-4 tracking-widest">近12个月营收趋势 Revenue Trend (12M)</h3>
-                        <div class="h-64"><canvas id="revChart"></canvas></div>
+                        <div class="h-40"><canvas id="revChart"></canvas></div>
                     </div>
                     <div class="space-y-6">
                         <div class="soap-card p-6 animate-sticker animate-sticker-delay-1 opacity-0">
@@ -281,40 +411,7 @@
                             <button onclick="savePendingOrder()" class="w-full bg-orange-500 text-white py-4 rounded-xl font-black text-sm md:text-base shadow-lg hover:bg-orange-600 active:scale-95 transition-all">生成订单并保存小票 Save & Print</button>
                         </div>
 
-                        <div class="flex justify-center bg-slate-100 rounded-2xl p-4 border border-slate-200 overflow-hidden relative group">
-                            <span class="absolute top-2 left-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest z-10">Receipt Preview</span>
-                            <div id="receiptArea" class="receipt-paper p-6 w-[400px] text-[12px] text-slate-800 leading-tight scale-[0.7] md:scale-90 origin-top shadow-lg">
-                                <div class="text-center mb-6 mt-2">
-                                    <h1 class="text-2xl font-black tracking-tighter italic">4 PAWS CANTEEN</h1>
-                                    <p class="text-[9px] text-slate-500 uppercase tracking-widest mt-1">Premium Pet Supplies</p>
-                                </div>
-                                <div class="flex justify-between border-b border-dashed border-slate-400 pb-3 mb-3 text-[11px]">
-                                    <div class="w-1/2 pr-2 space-y-0.5">
-                                        <p><span class="text-slate-500">To:</span> <b id="r-cust" class="uppercase">GUEST</b></p>
-                                        <p><span class="text-slate-500">Tel:</span> <span id="r-phone">-</span></p>
-                                        <p><span class="text-slate-500">Add:</span> <span id="r-address" class="block truncate whitespace-normal">-</span></p>
-                                    </div>
-                                    <div class="w-1/2 pl-2 text-right space-y-0.5">
-                                        <p class="font-mono font-bold text-sm" id="r-no">INV-0000</p>
-                                        <p><span class="text-slate-500">Date:</span> <span id="r-date"></span></p>
-                                        <p><span class="text-slate-500">Mode:</span> <b id="r-mode">DELIVERY</b></p>
-                                    </div>
-                                </div>
-                                <table class="w-full mb-4 text-[11px]">
-                                    <thead class="border-b border-slate-800"><tr><th class="text-left py-1">Item</th><th class="text-center">Qty</th><th class="text-right">Price</th><th class="text-right">Total</th></tr></thead>
-                                    <tbody id="r-items" class="divide-y divide-slate-100"></tbody>
-                                </table>
-                                <div class="flex justify-end pt-2">
-                                    <div class="w-48 space-y-1 text-right text-[11px]">
-                                        <div class="flex justify-between text-slate-600"><span>Sub-Total:</span><span>RM <span id="r-sub">0.00</span></span></div>
-                                        <div id="r-disc-row" class="flex justify-between text-red-500 hidden font-bold"><span>Discount:</span><span>-RM <span id="r-disc-val">0.00</span></span></div>
-                                        <div class="flex justify-between text-slate-600"><span>Delivery Fee:</span><span>RM <span id="r-dfee">0.00</span></span></div>
-                                        <div class="flex justify-between border-t border-slate-800 pt-2 mt-2 text-[13px]"><b>Grand Total:</b><b class="text-[14px]">RM <span id="r-grand">0.00</span></b></div>
-                                    </div>
-                                </div>
-                                <div class="mt-8 text-center text-slate-400 italic font-bold text-[10px]">*** Thank you for your support ***</div>
-                            </div>
-                        </div>
+                        <!-- Receipt Preview removed (auto-generate on save) -->
                     </div>
                 </div>
             </div>
@@ -349,7 +446,16 @@
             </div>
 
             <div id="tab-crm" class="tab-content hidden max-w-7xl mx-auto space-y-6">
-                <h2 class="text-2xl font-black tracking-tight mb-2">顾客管理 <span class="text-sm font-semibold text-slate-400 ml-2">CRM</span></h2>
+                <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+                    <h2 class="text-2xl font-black tracking-tight mb-2 md:mb-0">顾客管理 <span class="text-sm font-semibold text-slate-400 ml-2">CRM</span></h2>
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-2 py-1 shadow-sm">
+                            <span class="text-[11px] text-slate-400">搜索</span>
+                            <input id="crmSearch" type="text" placeholder="电话/姓名/地址" class="border-0 outline-none text-xs text-slate-700 bg-transparent" oninput="filterCRM()">
+                        </div>
+                        <button onclick="loadCRM()" class="bg-white border border-slate-200 shadow-sm px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-50 text-slate-700">↻ 刷新</button>
+                    </div>
+                </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="soap-card p-5 bg-[var(--macaron-blue)]/60"><p class="text-slate-600 text-[10px] font-bold uppercase mb-1">本月新客 New</p><h3 id="crmNewCount" class="text-3xl font-black text-slate-800 bubble-value">0</h3></div>
                     <div class="soap-card p-5 bg-[var(--macaron-green)]/60"><p class="text-slate-600 text-[10px] font-bold uppercase mb-1">回头客 Loyal</p><h3 id="crmReturnCount" class="text-3xl font-black text-slate-800 bubble-value">0</h3></div>
@@ -391,9 +497,27 @@
             </div>
 
             <div id="tab-manage" class="tab-content hidden max-w-7xl mx-auto space-y-6">
-                <div class="flex justify-between items-end mb-4">
-                    <h2 class="text-2xl font-black tracking-tight">商品库存 <span class="text-sm font-semibold text-slate-400 ml-2">Products</span></h2>
-                    <button onclick="loadManageInv()" class="bg-white border border-slate-200 shadow-sm px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-50 text-slate-700">↻ 刷新</button>
+                <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-4">
+                    <div>
+                        <h2 class="text-2xl font-black tracking-tight">商品库存 <span class="text-sm font-semibold text-slate-400 ml-2">Products</span></h2>
+                        <div class="mt-2 flex items-center gap-2 text-xs text-slate-500">
+                            <span>管理所有单品与组合，并监控低/缺货商品。</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <div class="relative">
+                            <button id="stockBellBtn" onclick="openLowStockList()" class="flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50">
+                                <span>🔔</span><span>库存预警</span>
+                                <span id="stockBellBadge" class="ml-1 hidden bg-red-500 text-white rounded-full px-1.5 text-[10px] font-black">0</span>
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-2 py-1 shadow-sm">
+                            <span class="text-[11px] text-slate-400">搜索</span>
+                            <input id="manageSearch" type="text" placeholder="品牌/品名/口味" class="border-0 outline-none text-xs text-slate-700 bg-transparent" oninput="filterManageInv()">
+                        </div>
+                        <button onclick="openComboModal()" class="bg-amber-500 text-white border border-amber-600 shadow-sm px-4 py-2 rounded-lg text-xs font-bold hover:bg-amber-600">+ 新增组合</button>
+                        <button onclick="loadManageInv()" class="bg-white border border-slate-200 shadow-sm px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-50 text-slate-700">↻ 刷新</button>
+                    </div>
                 </div>
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="overflow-x-auto no-scrollbar">
@@ -480,6 +604,37 @@
         // 全局状态
         let cloudProds = [], cart = [], chart = null, chartPie = null, chartReportBar = null, currentMode = "DELIVERY";
 
+        // 简单加载中提示
+        function showLoading(text) {
+            const overlay = document.getElementById('globalLoading');
+            const label = document.getElementById('globalLoadingText');
+            if (label && text) label.textContent = text;
+            if (overlay) overlay.classList.remove('hidden');
+        }
+        function hideLoading() {
+            const overlay = document.getElementById('globalLoading');
+            if (overlay) overlay.classList.add('hidden');
+        }
+
+        // 将本地 logo.png 转成 dataURL，避免 html2canvas tainted canvas
+        let _logoDataUrl = null;
+        async function ensureLogoDataUrl() {
+            if (_logoDataUrl) return _logoDataUrl;
+            try {
+                const res = await fetch('logo.png', { cache: 'reload' });
+                const blob = await res.blob();
+                _logoDataUrl = await new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => resolve(null);
+                    reader.readAsDataURL(blob);
+                });
+            } catch (e) {
+                _logoDataUrl = null;
+            }
+            return _logoDataUrl;
+        }
+
         // === 初始化与记忆登录 ===
         window.onload = () => {
             const savedEmail = localStorage.getItem('4p_email');
@@ -503,19 +658,26 @@
         async function handleLogin() {
             const email = document.getElementById('adminEmail').value;
             const pwd = document.getElementById('adminPwd').value;
-            if(!email || !pwd) return alert("请填写完整账号密码！");
-            
-            const { error } = await _supabase.auth.signInWithPassword({ email: email, password: pwd });
-            if (error) {
-                alert("登录失败: " + error.message);
-            } else {
-                if(document.getElementById('rememberMe').checked) {
-                    localStorage.setItem('4p_email', email); localStorage.setItem('4p_pwd', pwd);
+            if(!email || !pwd) { alert("请填写完整账号密码！"); return; }
+            const btn = document.getElementById('loginBtn');
+            if (btn) { btn.disabled = true; btn.textContent = "登录中，请稍候..."; }
+            showLoading("正在登录到 4 Paws Canteen...");
+            try {
+                const { error } = await _supabase.auth.signInWithPassword({ email: email, password: pwd });
+                if (error) {
+                    alert("登录失败: " + error.message);
                 } else {
-                    localStorage.removeItem('4p_email'); localStorage.removeItem('4p_pwd');
+                    if(document.getElementById('rememberMe').checked) {
+                        localStorage.setItem('4p_email', email); localStorage.setItem('4p_pwd', pwd);
+                    } else {
+                        localStorage.removeItem('4p_email'); localStorage.removeItem('4p_pwd');
+                    }
+                    document.getElementById('loginPage').classList.add('hidden');
+                    switchTab('dashboard'); addInvRow(); setupPosSearch();
                 }
-                document.getElementById('loginPage').classList.add('hidden');
-                switchTab('dashboard'); addInvRow(); setupPosSearch();
+            } finally {
+                hideLoading();
+                if (btn) { btn.disabled = false; btn.textContent = "安全登录 Login"; }
             }
         }
 
@@ -613,11 +775,18 @@
         }
 
         // === POS 搜索与加购逻辑 ===
-        function showAllPosProducts() {
+        async function ensureCloudProdsLoaded() {
+            if (!cloudProds || cloudProds.length === 0) {
+                await loadCloudProds();
+            }
+        }
+        async function showAllPosProducts() {
+            await ensureCloudProdsLoaded();
             renderPosSuggestions(cloudProds); 
         }
 
-        function filterPosProducts() {
+        async function filterPosProducts() {
+            await ensureCloudProdsLoaded();
             const val = document.getElementById('posSearch').value.toLowerCase().trim();
             const matches = val ? cloudProds.filter(p => 
                 (p.brand && p.brand.toLowerCase().includes(val)) || 
@@ -772,7 +941,10 @@
         }
 
         async function savePendingOrder() {
-            if(cart.length === 0) return alert("购物车不能为空！");
+            if(cart.length === 0) { alert("购物车不能为空！"); return; }
+            const saveBtn = document.querySelector('button[onclick="savePendingOrder()"]');
+            if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "生成中，请稍候..."; }
+            showLoading("正在生成订单并保存到数据库...");
             const phone = document.getElementById('custPhone').value.trim();
             const name = document.getElementById('custName').value;
             const addr = document.getElementById('custAddr').value;
@@ -792,22 +964,51 @@
             const discType = document.getElementById('posDiscType').value;
             let actualDisc = discType === '%' ? sub * (discInput / 100) : discInput;
 
-            await html2canvas(document.getElementById('receiptArea'), { scale: 3, backgroundColor: '#ffffff' }).then(canvas => {
-                const link = document.createElement('a'); link.download = `${document.getElementById('r-no').innerText}.png`;
-                link.href = canvas.toDataURL("image/png"); link.click();
-            });
+            try {
+                const { error } = await _supabase.from('orders').insert({
+                    order_no: document.getElementById('r-no').innerText, customer_name: name || "GUEST",
+                    phone, address: addr, delivery_mode: currentMode, delivery_fee: dfee, 
+                    grand_total_myr: sub + dfee - actualDisc, total_cost_myr: totalCost, discount: actualDisc, discount_type: discType, status: 'pending', cart_data: cart
+                });
 
-            const { error } = await _supabase.from('orders').insert({
-                order_no: document.getElementById('r-no').innerText, customer_name: name || "GUEST",
-                phone, address: addr, delivery_mode: currentMode, delivery_fee: dfee, 
-                grand_total_myr: sub + dfee - actualDisc, total_cost_myr: totalCost, discount: actualDisc, discount_type: discType, status: 'pending', cart_data: cart
-            });
+                if (error) {
+                    alert("保存出错: " + error.message);
+                    return;
+                }
 
-            if(!error) {
-                cart = []; renderCart(); 
-                ['custPhone', 'custName', 'custAddr', 'posDeliveryFee', 'posDisc'].forEach(id => document.getElementById(id).value = '');
+                // 订单已成功保存：生成并下载白底发票 PNG（不打开新窗口）
+                try {
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    if (!isMobile && typeof html2canvas === 'function') {
+                        const node = document.getElementById('receiptArea');
+                        // 用 dataURL 内嵌 logo，彻底避免 tainted canvas
+                        const logoDataUrl = await ensureLogoDataUrl();
+                        const logoImg = document.getElementById('invoiceLogo');
+                        if (logoImg && logoDataUrl) logoImg.src = logoDataUrl;
+                        // 确保图片资源加载完
+                        const imgs = Array.from(node.querySelectorAll('img'));
+                        await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => { img.onload = res; img.onerror = res; })));
+                        const canvas = await html2canvas(node, {
+                            scale: 1,
+                            backgroundColor: '#ffffff',
+                            useCORS: false
+                        });
+                        const link = document.createElement('a');
+                        link.download = document.getElementById('r-no').innerText + '.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    }
+                } catch (e) {
+                    alert("订单已保存，但小票图片生成失败: " + (e && e.message ? e.message : e));
+                }
+
+                cart = []; renderCart();
+                ['custPhone', 'custName', 'custAddr', 'posDeliveryFee', 'posDisc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
                 updateR(); updateInvNo(); loadPending(); switchTab('pending');
-            } else alert("保存出错: " + error.message);
+            } finally {
+                hideLoading();
+                if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = "生成订单并保存小票 Save & Print"; }
+            }
         }
 
         // === 订单状态机 ===
@@ -970,10 +1171,10 @@
 
         // === CRM ===
         function escapeCrmId(s) { return String(s).replace(/[^a-zA-Z0-9-_]/g, '_'); }
-        async function loadCRM() {
-            const { data } = await _supabase.from('customers').select('phone, name, address, total_orders, total_spent, created_at').order('total_spent', { ascending: false });
+        let crmCache = [];
+        function renderCRM(list) {
             let newCount = 0, returnCount = 0, currentMonth = new Date().getMonth();
-            document.getElementById('crmBody').innerHTML = (data||[]).map(c => {
+            document.getElementById('crmBody').innerHTML = (list||[]).map(c => {
                 if(new Date(c.created_at).getMonth() === currentMonth) newCount++;
                 if(c.total_orders > 1) returnCount++;
                 const safeId = escapeCrmId(c.phone);
@@ -992,7 +1193,23 @@
                     </td>
                 </tr>`;
             }).join('');
-            document.getElementById('crmNewCount').innerText = newCount; document.getElementById('crmReturnCount').innerText = returnCount;
+            document.getElementById('crmNewCount').innerText = newCount;
+            document.getElementById('crmReturnCount').innerText = returnCount;
+        }
+        function filterCRM() {
+            const q = (document.getElementById('crmSearch')?.value || '').toLowerCase().trim();
+            if (!q) { renderCRM(crmCache); return; }
+            const filtered = crmCache.filter(c => {
+                return (c.phone||'').toLowerCase().includes(q) ||
+                    (c.name||'').toLowerCase().includes(q) ||
+                    (c.address||'').toLowerCase().includes(q);
+            });
+            renderCRM(filtered);
+        }
+        async function loadCRM() {
+            const { data } = await _supabase.from('customers').select('phone, name, address, total_orders, total_spent, created_at').order('total_spent', { ascending: false });
+            crmCache = data || [];
+            filterCRM();
         }
 
         async function updateCrm(safeId, phone) {
@@ -1119,9 +1336,11 @@
         }
 
         // === 商品管理 ===
-        async function loadManageInv() {
-            const { data } = await _supabase.from('products').select('*').order('brand', { ascending: true });
-            document.getElementById('manageBody').innerHTML = (data||[]).map(p => {
+        let manageCache = [];
+        function renderManageInv(list) {
+            const tbody = document.getElementById('manageBody');
+            if (!tbody) return;
+            tbody.innerHTML = (list||[]).map(p => {
                 const profit = (p.suggested_price||0) - (p.price_myr||0);
                 const safeName = ((p.brand||'') + ' ' + (p.name_zh||'')).replace(/'/g, "’");
                 const combo = isCombo(p);
@@ -1145,6 +1364,65 @@
                         </div>
                     </td>
                 </tr>`}).join('');
+        }
+        function updateStockBell() {
+            const badge = document.getElementById('stockBellBadge');
+            if (!badge) return;
+            let warn = 0;
+            (manageCache||[]).forEach(p => {
+                const q = p.stock_quantity || 0;
+                if (q === 0 || q < 5) warn++;
+            });
+            if (warn > 0) {
+                badge.textContent = warn;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+        function filterManageInv() {
+            const q = (document.getElementById('manageSearch')?.value || '').toLowerCase().trim();
+            if (!q) {
+                renderManageInv(manageCache);
+                return;
+            }
+            const filtered = manageCache.filter(p => {
+                const brand = (p.brand || '').toLowerCase();
+                const name = (p.name_zh || '').toLowerCase();
+                const flavor = (p.flavor || '').toLowerCase();
+                const code = (p.product_id_code || '').toLowerCase();
+                return brand.includes(q) || name.includes(q) || flavor.includes(q) || code.includes(q);
+            });
+            renderManageInv(filtered);
+        }
+        async function openLowStockList() {
+            const low = (manageCache||[]).filter(p => (p.stock_quantity||0) < 5);
+            document.getElementById('modalTitle').innerText = '库存预警列表';
+            if (!low.length) {
+                document.getElementById('modalContent').innerHTML = '<p class="text-sm text-slate-500">当前没有低库存或缺货商品。</p>';
+            } else {
+                document.getElementById('modalContent').innerHTML = '<div class="space-y-2 max-h-[60vh] overflow-y-auto">' + low.map(p => {
+                    const q = p.stock_quantity || 0;
+                    const level = q === 0 ? '缺货' : '低库存';
+                    const color = q === 0 ? 'text-red-600' : 'text-amber-600';
+                    return `<div class="flex justify-between items-center text-xs bg-slate-50 border border-slate-100 rounded-lg px-3 py-2">
+                        <div class="truncate max-w-[160px]"><span class="font-bold text-slate-700">${p.brand||''} ${p.name_zh||p.product_id_code}</span><span class="block text-[10px] text-slate-400">ID: ${p.product_id_code}</span></div>
+                        <div class="text-right">
+                            <div class="${color} font-black">${level}</div>
+                            <div class="text-[10px] text-slate-500">库存: ${q}</div>
+                        </div>
+                    </div>`;
+                }).join('') + '</div>';
+            }
+            document.getElementById('modalActions').classList.add('hidden');
+            document.getElementById('modalActions').innerHTML = '';
+            document.getElementById('generalModal').classList.remove('hidden');
+        }
+        async function loadManageInv() {
+            const { data } = await _supabase.from('products').select('*').order('brand', { ascending: true });
+            manageCache = data || [];
+            renderManageInv(manageCache);
+            updateStockBell();
         }
 
         async function updateProduct(id, isComboProduct) { 
@@ -1185,6 +1463,86 @@
                     }
                 }
             }
+        }
+
+        var comboEditRows = [];
+        var comboSinglesList = [];
+        function openComboModal() {
+            comboEditRows = [];
+            document.getElementById('modalTitle').innerText = '新增组合 / 整盒套餐';
+            document.getElementById('modalContent').innerHTML = '<div class="space-y-4">' +
+                '<div><label class="text-[10px] text-slate-500 font-bold uppercase">组合名称</label><input type="text" id="comboName" placeholder="如: A 组合" class="w-full p-3 border rounded-xl text-sm mt-1"></div>' +
+                '<div><label class="text-[10px] text-slate-500 font-bold uppercase">卖价 RM</label><input type="number" step="0.01" id="comboPrice" placeholder="售价" class="w-full p-3 border rounded-xl text-sm mt-1"></div>' +
+                '<div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] text-slate-500 font-bold uppercase">品牌 (可选)</label><input type="text" id="comboBrand" class="w-full p-2 border rounded-lg text-xs mt-1"></div><div><label class="text-[10px] text-slate-500 font-bold uppercase">口味 (可选)</label><input type="text" id="comboFlavor" class="w-full p-2 border rounded-lg text-xs mt-1"></div></div>' +
+                '<div><label class="text-[10px] text-slate-500 font-bold uppercase">组成商品</label><div id="comboItemsList" class="mt-2 space-y-2 border border-slate-200 rounded-xl p-2 min-h-[80px]"></div><button type="button" onclick="addComboItemRow()" class="mt-2 w-full py-2 border-2 border-dashed border-slate-300 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50">+ 添加商品</button></div>' +
+                '<div class="pt-2 border-t border-slate-200"><span class="text-xs font-bold text-slate-500">总成本</span> <span id="comboTotalCost" class="text-lg font-black text-slate-800">RM 0.00</span></div>' +
+                '</div>';
+            document.getElementById('modalActions').innerHTML = '<button onclick="saveCombo()" class="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-black text-sm">保存组合</button>';
+            document.getElementById('modalActions').classList.remove('hidden');
+            document.getElementById('generalModal').classList.remove('hidden');
+            _supabase.from('products').select('product_id_code, brand, name_zh, flavor, price_myr, product_type, combo_items').then(function(r) {
+                var list = (r.data || []).filter(function(p) {
+                    return p.product_type !== 'combo' && (!p.combo_items || !Array.isArray(p.combo_items) || p.combo_items.length === 0);
+                });
+                comboSinglesList = list;
+                if (comboEditRows.length === 0) addComboItemRow();
+                else renderComboItems();
+            });
+        }
+        function addComboItemRow() {
+            comboEditRows.push({ product_id_code: '', qty: 1 });
+            renderComboItems();
+        }
+        function removeComboItemRow(idx) {
+            comboEditRows.splice(idx, 1);
+            renderComboItems();
+        }
+        function renderComboItems() {
+            var container = document.getElementById('comboItemsList');
+            if (!container) return;
+            var totalCost = 0;
+            container.innerHTML = comboEditRows.map(function(row, idx) {
+                var p = row.product_id_code ? comboSinglesList.find(function(x) { return x.product_id_code === row.product_id_code; }) : null;
+                if (p) totalCost += (p.price_myr || 0) * (row.qty || 0);
+                var label = p ? (p.brand || '') + ' ' + (p.name_zh || p.product_id_code) + ' ' + (p.flavor || '') : '选单品';
+                return '<div class="flex flex-wrap items-center gap-2 p-2 bg-slate-50 rounded-lg">' +
+                    '<select class="flex-1 min-w-[120px] p-2 border rounded-lg text-xs" onchange="comboEditRows[' + idx + '].product_id_code=this.value; renderComboItems();">' +
+                    '<option value="">-- 选择商品 --</option>' +
+                    comboSinglesList.map(function(s) {
+                        return '<option value="' + (s.product_id_code || '').replace(/"/g, '&quot;') + '"' + (row.product_id_code === s.product_id_code ? ' selected' : '') + '>' + ((s.brand||'')+' '+(s.name_zh||s.product_id_code)).trim().substring(0, 30) + '</option>';
+                    }).join('') +
+                    '</select>' +
+                    '<input type="number" min="1" class="w-16 p-2 border rounded-lg text-xs text-center" value="' + (row.qty || 1) + '" onchange="comboEditRows[' + idx + '].qty=parseInt(this.value)||1; renderComboItems();">' +
+                    '<span class="text-[10px] text-slate-500">件</span>' +
+                    (p ? '<span class="text-[10px] text-green-600 font-bold">RM ' + ((p.price_myr||0)*(row.qty||1)).toFixed(2) + '</span>' : '') +
+                    '<button type="button" onclick="removeComboItemRow(' + idx + ')" class="text-slate-400 hover:text-red-500 font-bold">✖</button>' +
+                    '</div>';
+            }).join('');
+            var costEl = document.getElementById('comboTotalCost');
+            if (costEl) costEl.textContent = 'RM ' + totalCost.toFixed(2);
+        }
+        async function saveCombo() {
+            var name = document.getElementById('comboName').value.trim();
+            var price = parseFloat(document.getElementById('comboPrice').value);
+            if (!name) { alert('请填写组合名称'); return; }
+            if (isNaN(price) || price < 0) { alert('请填写有效卖价'); return; }
+            var items = comboEditRows.filter(function(r) { return r.product_id_code && (r.qty || 0) > 0; }).map(function(r) { return { product_id_code: r.product_id_code, qty: r.qty || 1 }; });
+            if (items.length === 0) { alert('请至少添加一个组成商品'); return; }
+            var totalCost = 0;
+            items.forEach(function(it) {
+                var p = comboSinglesList.find(function(x) { return x.product_id_code === it.product_id_code; });
+                if (p) totalCost += (p.price_myr || 0) * it.qty;
+            });
+            var code = 'COMBO-' + Date.now();
+            var brand = (document.getElementById('comboBrand') && document.getElementById('comboBrand').value) ? document.getElementById('comboBrand').value.trim() : '';
+            var flavor = (document.getElementById('comboFlavor') && document.getElementById('comboFlavor').value) ? document.getElementById('comboFlavor').value.trim() : '';
+            var payload = { product_id_code: code, product_type: 'combo', combo_items: items, stock_quantity: 0, name_zh: name, suggested_price: price, price_myr: totalCost, brand: brand || null, flavor: flavor || null };
+            var res = await _supabase.from('products').insert(payload);
+            if (res.error) { alert('保存失败: ' + res.error.message); return; }
+            closeModal();
+            loadManageInv();
+            loadCloudProds();
+            alert('组合已保存，可在 POS 中按组合出售。');
         }
 
         // === 支出记录 (New) ===
