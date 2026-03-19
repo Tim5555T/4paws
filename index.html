@@ -90,12 +90,12 @@
         z-index: 0;
     }
     .invoice-divider { border: 0; border-top: 2px solid #111827; margin: 16px 0 18px; }
-    .invoice-h2 { font-size: 22px; font-weight: 800; margin: 0; }
-    .invoice-sub { font-size: 12px; color: #374151; margin-top: 4px; }
-    .invoice-meta-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #111827; margin-bottom: 6px; }
-    .invoice-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .invoice-table th { text-align: left; font-weight: 800; border-bottom: 1px solid #111827; padding: 8px 6px; }
-    .invoice-table td { border-bottom: 1px solid #e5e7eb; padding: 10px 6px; vertical-align: top; }
+    .invoice-h2 { font-size: 24px; font-weight: 800; margin: 0; }
+    .invoice-sub { font-size: 14px; color: #374151; margin-top: 4px; }
+    .invoice-meta-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: #111827; margin-bottom: 6px; }
+    .invoice-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .invoice-table th { text-align: left; font-weight: 800; border-bottom: 1px solid #111827; padding: 7px 6px; }
+    .invoice-table td { border-bottom: 1px solid #e5e7eb; padding: 8px 6px; vertical-align: top; }
     .invoice-right { text-align: right; }
     .invoice-center { text-align: center; }
 
@@ -123,7 +123,7 @@
     <div id="loginPage" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 p-4">
         <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 md:p-10 text-center">
             <div class="w-20 h-20 rounded-full overflow-hidden mx-auto flex items-center justify-center mb-6 shadow-lg shadow-orange-500/30 border-2 border-orange-400 bg-white">
-                <img src="logo.png" alt="4 Paws Canteen Logo" class="w-full h-full object-cover">
+                <img id="loginLogo" src="logo.png" alt="4 Paws Canteen Logo" class="w-full h-full object-cover">
             </div>
             <h1 class="text-2xl md:text-3xl font-black tracking-tight mb-2">系统登录 <span class="text-sm text-slate-400 block mt-1 uppercase tracking-widest">System Login</span></h1>
             <div class="space-y-4 mt-8">
@@ -163,7 +163,7 @@
                 <div style="display:flex;justify-content:space-between;gap:24px;">
                     <div style="flex:1;">
                         <div class="invoice-meta-title">Customer Details</div>
-                        <div style="font-size:12px;line-height:1.5;color:#111827;">
+                        <div style="font-size:14px;line-height:1.6;color:#111827;">
                             <div>Name : <b id="r-cust">GUEST</b></div>
                             <div>Contact : <b id="r-phone">-</b></div>
                             <div>Address : <b id="r-address">-</b></div>
@@ -171,7 +171,7 @@
                     </div>
                     <div style="flex:1;text-align:right;">
                         <div class="invoice-meta-title">Order Details</div>
-                        <div style="font-size:12px;line-height:1.5;color:#111827;">
+                        <div style="font-size:14px;line-height:1.6;color:#111827;">
                             <div>Order # : <b id="r-no">INV-0000</b></div>
                             <div>Date/Time : <b id="r-date">-</b></div>
                             <div>Option : <b id="r-mode">DELIVERY</b></div>
@@ -195,22 +195,22 @@
                 </div>
 
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:14px;">
-                    <div style="font-size:12px;color:#111827;">
+                    <div style="font-size:14px;color:#111827;">
                         <b>Total Qty:</b> <span id="r-total-qty">0</span>
                     </div>
                     <div style="min-width:340px;">
-                        <div style="display:flex;justify-content:space-between;font-size:12px;color:#111827;padding:3px 0;">
+                        <div style="display:flex;justify-content:space-between;font-size:14px;color:#111827;padding:3px 0;">
                             <span>Sub-Total</span><span>RM <b id="r-sub">0.00</b></span>
                         </div>
-                        <div style="display:flex;justify-content:space-between;font-size:12px;color:#111827;padding:3px 0;">
+                        <div style="display:flex;justify-content:space-between;font-size:14px;color:#111827;padding:3px 0;">
                             <span>Delivery Fee</span><span>RM <b id="r-dfee">0.00</b></span>
                         </div>
-                        <div id="r-disc-row" style="display:none;justify-content:space-between;font-size:12px;color:#b91c1c;font-weight:800;padding:3px 0;">
+                        <div id="r-disc-row" style="display:none;justify-content:space-between;font-size:14px;color:#b91c1c;font-weight:800;padding:3px 0;">
                             <span>Discount</span><span>-RM <b id="r-disc-val">0.00</b></span>
                         </div>
                         <div style="border-top:2px solid #111827;margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;">
-                            <span style="font-size:14px;font-weight:900;">Grand Total</span>
-                            <span style="font-size:16px;font-weight:900;">RM <span id="r-grand">0.00</span></span>
+                            <span style="font-size:16px;font-weight:900;">Grand Total</span>
+                            <span style="font-size:18px;font-weight:900;">RM <span id="r-grand">0.00</span></span>
                         </div>
                     </div>
                 </div>
@@ -227,7 +227,7 @@
         <div class="p-6 flex items-center justify-between border-b border-slate-800/50 shrink-0">
             <div class="flex items-center gap-3 w-full">
                 <div class="logo-icon w-10 h-10 rounded-full overflow-hidden border-2 border-orange-400 shadow-lg shadow-orange-500/20 shrink-0 bg-white flex items-center justify-center">
-                    <img src="logo.png" alt="4 Paws Canteen Logo" class="w-full h-full object-cover">
+                    <img id="sidebarLogo" src="logo.png" alt="4 Paws Canteen Logo" class="w-full h-full object-cover">
                 </div>
                 <div class="logo-text overflow-hidden">
                     <span class="block text-[10px] text-slate-400 tracking-[0.25em] uppercase">Backoffice</span>
@@ -408,10 +408,10 @@
                                 <span class="text-slate-400 font-bold text-sm">应收总计 Payable</span>
                                 <span class="text-3xl font-black">RM <span id="ui-grand">0.00</span></span>
                             </div>
-                            <button onclick="savePendingOrder()" class="w-full bg-orange-500 text-white py-4 rounded-xl font-black text-sm md:text-base shadow-lg hover:bg-orange-600 active:scale-95 transition-all">生成订单并保存小票 Save & Print</button>
+                            <button onclick="savePendingOrder()" class="w-full bg-orange-500 text-white py-4 rounded-xl font-black text-sm md:text-base shadow-lg hover:bg-orange-600 active:scale-95 transition-all">生成订单并保存 Save Order</button>
                         </div>
 
-                        <!-- Receipt Preview removed (auto-generate on save) -->
+                        <!-- receipt 仅在「待处理 Pending」里点击查看/下载时生成 -->
                     </div>
                 </div>
             </div>
@@ -635,6 +635,15 @@
             return _logoDataUrl;
         }
 
+        async function applyLogoToUI() {
+            const logoDataUrl = await ensureLogoDataUrl();
+            if (!logoDataUrl) return;
+            ['loginLogo', 'sidebarLogo', 'invoiceLogo'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.src = logoDataUrl;
+            });
+        }
+
         // === 初始化与记忆登录 ===
         window.onload = () => {
             const savedEmail = localStorage.getItem('4p_email');
@@ -653,6 +662,8 @@
                 const y = new Date().getFullYear();
                 for (let i = y; i >= y - 5; i--) { const o = document.createElement('option'); o.value = i; o.textContent = i + ' 年'; yearSel.appendChild(o); }
             }
+            // 用 dataURL 固化 logo，避免手机端线上找不到 logo.png 时图片不显示
+            applyLogoToUI();
         };
 
         async function handleLogin() {
@@ -976,38 +987,14 @@
                     return;
                 }
 
-                // 订单已成功保存：生成并下载白底发票 PNG（不打开新窗口）
-                try {
-                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                    if (!isMobile && typeof html2canvas === 'function') {
-                        const node = document.getElementById('receiptArea');
-                        // 用 dataURL 内嵌 logo，彻底避免 tainted canvas
-                        const logoDataUrl = await ensureLogoDataUrl();
-                        const logoImg = document.getElementById('invoiceLogo');
-                        if (logoImg && logoDataUrl) logoImg.src = logoDataUrl;
-                        // 确保图片资源加载完
-                        const imgs = Array.from(node.querySelectorAll('img'));
-                        await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => { img.onload = res; img.onerror = res; })));
-                        const canvas = await html2canvas(node, {
-                            scale: 1,
-                            backgroundColor: '#ffffff',
-                            useCORS: false
-                        });
-                        const link = document.createElement('a');
-                        link.download = document.getElementById('r-no').innerText + '.png';
-                        link.href = canvas.toDataURL('image/png');
-                        link.click();
-                    }
-                } catch (e) {
-                    alert("订单已保存，但小票图片生成失败: " + (e && e.message ? e.message : e));
-                }
+                // receipt 不再自动生成：改为在「待处理 Pending」里点击查看/下载时才生成
 
                 cart = []; renderCart();
                 ['custPhone', 'custName', 'custAddr', 'posDeliveryFee', 'posDisc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
                 updateR(); updateInvNo(); loadPending(); switchTab('pending');
             } finally {
                 hideLoading();
-                if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = "生成订单并保存小票 Save & Print"; }
+                if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = "生成订单并保存 Save Order"; }
             }
         }
 
@@ -1025,6 +1012,10 @@
                         <div class="flex justify-between items-start mb-2"><b class="font-mono text-sm text-slate-500">${o.order_no}</b><span class="text-[10px] bg-slate-100 px-2 py-1 rounded-md font-bold text-slate-600">${o.delivery_mode}</span></div>
                         <p class="font-black text-lg mb-1">${o.customer_name || 'Guest'}</p>
                         <p class="text-slate-500 text-sm mb-4">应收 Amount: <b class="text-black text-lg">RM ${o.grand_total_myr.toFixed(2)}</b></p>
+                        <div class="flex flex-wrap gap-2 mb-2">
+                            <button onclick="viewPendingReceipt('${o.id}')" class="flex-1 bg-blue-50 text-blue-600 font-bold text-xs px-3 py-2 rounded-xl hover:bg-blue-100 transition-all border border-blue-100">查看 Receipt</button>
+                            <button onclick="downloadPendingReceipt('${o.id}')" class="flex-1 bg-slate-900 text-white font-bold text-xs px-3 py-2 rounded-xl hover:bg-black transition-all shadow-sm">下载 Receipt</button>
+                        </div>
                     </div>
                     <div class="mt-auto pt-4 border-t border-slate-100">
                         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">我方实际支付运费 Actual Shipping (RM)</label>
@@ -1070,6 +1061,126 @@
         }
 
         async function cancelOrder(id) { if(confirm("作废此订单？")) { await _supabase.from('orders').update({ status: 'cancelled' }).eq('id', id); loadPending(); } }
+
+        // === Pending 订单 Receipt（仅在待处理里手动点击查看/下载）===
+        function detectIsMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        function populateReceiptAreaFromOrder(o) {
+            document.getElementById('r-cust').innerText = o.customer_name || "GUEST";
+            document.getElementById('r-phone').innerText = o.phone || "-";
+            document.getElementById('r-address').innerText = o.address || "-";
+            document.getElementById('r-no').innerText = o.order_no || "INV-0000";
+            document.getElementById('r-date').innerText = o.created_at ? new Date(o.created_at).toLocaleString() : "-";
+            document.getElementById('r-mode').innerText = (o.delivery_mode || "delivery").toString().toUpperCase();
+
+            const items = Array.isArray(o.cart_data) ? o.cart_data : [];
+            let totalQty = 0;
+            let sub = 0;
+
+            document.getElementById('r-items').innerHTML = items.map(i => {
+                const qty = Number(i.qty || 0);
+                const price = Number(i.price || 0);
+                const amount = Number(i.total != null ? i.total : qty * price);
+                totalQty += qty;
+                sub += amount;
+                const desc = i.displayName || i.code || "";
+                return `
+                    <tr>
+                        <td style="width:55%;">${desc}</td>
+                        <td class="invoice-center" style="width:8%;">${qty}</td>
+                        <td class="invoice-right" style="width:12%;">RM ${price.toFixed(2)}</td>
+                        <td class="invoice-right" style="width:15%;">RM ${amount.toFixed(2)}</td>
+                        <td class="invoice-right" style="width:10%;">RM 0.00</td>
+                    </tr>
+                `.trim();
+            }).join('');
+
+            document.getElementById('r-total-qty').innerText = String(totalQty);
+
+            const dfee = Number(o.delivery_fee || 0);
+            const disc = Number(o.discount || 0);
+            const grand = Number(o.grand_total_myr != null ? o.grand_total_myr : (sub + dfee - disc));
+
+            document.getElementById('r-sub').innerText = sub.toFixed(2);
+            document.getElementById('r-dfee').innerText = dfee.toFixed(2);
+            document.getElementById('r-grand').innerText = grand.toFixed(2);
+
+            const discRow = document.getElementById('r-disc-row');
+            if (disc > 0.0001) {
+                discRow.style.display = 'flex';
+                document.getElementById('r-disc-val').innerText = disc.toFixed(2);
+            } else {
+                discRow.style.display = 'none';
+                document.getElementById('r-disc-val').innerText = '0.00';
+            }
+        }
+
+        async function generateReceiptAreaCanvas(orderId) {
+            if (typeof html2canvas !== 'function') throw new Error('html2canvas 未加载');
+            showLoading('正在生成 Receipt 图片...');
+
+            const { data: o } = await _supabase.from('orders').select('*').eq('id', orderId).single();
+            if (!o) throw new Error('订单不存在');
+
+            populateReceiptAreaFromOrder(o);
+
+            const logoDataUrl = await ensureLogoDataUrl();
+            const logoImg = document.getElementById('invoiceLogo');
+            if (logoImg && logoDataUrl) logoImg.src = logoDataUrl;
+
+            const node = document.getElementById('receiptArea');
+            const imgs = Array.from(node.querySelectorAll('img'));
+            await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => { img.onload = res; img.onerror = res; })));
+
+            const isMobile = detectIsMobile();
+            const canvas = await html2canvas(node, {
+                scale: isMobile ? 0.85 : 1,
+                backgroundColor: '#ffffff',
+                useCORS: false
+            });
+
+            hideLoading();
+            return { canvas, orderNo: o.order_no || orderId };
+        }
+
+        async function viewPendingReceipt(id) {
+            try {
+                const { canvas, orderNo } = await generateReceiptAreaCanvas(id);
+                const dataUrl = canvas.toDataURL('image/png');
+
+                document.getElementById('modalTitle').innerText = 'Receipt（待处理）';
+                document.getElementById('modalContent').innerHTML = `
+                    <div class="flex justify-center">
+                        <img src="${dataUrl}" class="max-w-full rounded-xl border border-slate-200 bg-white" />
+                    </div>
+                `;
+                document.getElementById('modalActions').innerHTML = `
+                    <a href="${dataUrl}" download="Receipt_${String(orderNo).replace(/[^a-zA-Z0-9-_]/g, '_')}.png" class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-black text-sm inline-flex items-center justify-center">
+                        ⬇️ 下载图片 Download PNG
+                    </a>
+                `;
+                document.getElementById('modalActions').classList.remove('hidden');
+                document.getElementById('generalModal').classList.remove('hidden');
+            } catch (e) {
+                hideLoading();
+                alert('生成 Receipt 失败：' + (e && e.message ? e.message : e));
+            }
+        }
+
+        async function downloadPendingReceipt(id) {
+            try {
+                const { canvas, orderNo } = await generateReceiptAreaCanvas(id);
+                const link = document.createElement('a');
+                link.download = `Receipt_${String(orderNo).replace(/[^a-zA-Z0-9-_]/g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (e) {
+                hideLoading();
+                alert('下载 Receipt 失败：' + (e && e.message ? e.message : e));
+            }
+        }
 
         // === 历史记录与还原收据 ===
         async function searchOrderByNo() {
@@ -1140,17 +1251,17 @@
             
             document.getElementById('modalTitle').innerText = "Receipt: " + o.order_no;
             let sub = 0;
-            const itemsHtml = o.cart_data.map(i => { sub += i.total; return `<div class="flex justify-between text-xs py-1 border-b border-dashed border-slate-200 last:border-0"><span class="w-3/5 truncate pr-2">${i.displayName||i.code}</span><span class="w-1/5 text-center text-slate-400">x${i.qty}</span><span class="w-1/5 text-right font-bold">RM ${i.total.toFixed(2)}</span></div>` }).join('');
+            const itemsHtml = o.cart_data.map(i => { sub += i.total; return `<div class="flex justify-between text-sm py-1 border-b border-dashed border-slate-200 last:border-0"><span class="w-3/5 truncate pr-2">${i.displayName||i.code}</span><span class="w-1/5 text-center text-slate-400">x${i.qty}</span><span class="w-1/5 text-right font-bold">RM ${i.total.toFixed(2)}</span></div>` }).join('');
             
             document.getElementById('modalContent').innerHTML = `
-                <div id="rebuildReceipt" class="bg-white p-6 border rounded-xl font-mono text-sm relative">
-                    <h2 class="text-center font-black text-xl italic mb-4">4 PAWS CANTEEN</h2>
-                    <div class="text-xs text-slate-500 mb-4 pb-2 border-b border-slate-800 flex justify-between">
+                <div id="rebuildReceipt" class="bg-white p-6 border rounded-xl font-mono text-base relative">
+                    <h2 class="text-center font-black text-2xl italic mb-4">4 PAWS CANTEEN</h2>
+                    <div class="text-sm text-slate-500 mb-4 pb-2 border-b border-slate-800 flex justify-between">
                         <div><p>To: <b class="text-black">${o.customer_name}</b></p><p>Tel: ${o.phone||'-'}</p></div>
                         <div class="text-right"><p>${o.order_no}</p><p>${new Date(o.created_at).toLocaleDateString()}</p></div>
                     </div>
                     <div class="mb-4">${itemsHtml}</div>
-                    <div class="text-xs space-y-1 text-right">
+                    <div class="text-sm space-y-1 text-right">
                         <p>Sub-Total: <span class="inline-block w-16">RM ${sub.toFixed(2)}</span></p>
                         ${o.discount > 0 ? `<p class="text-red-500">Discount: <span class="inline-block w-16">-RM ${o.discount.toFixed(2)}</span></p>` : ''}
                         <p>Delivery: <span class="inline-block w-16">RM ${(o.delivery_fee||0).toFixed(2)}</span></p>
@@ -1164,7 +1275,8 @@
         }
 
         function downloadRebuildReceipt(no) {
-            html2canvas(document.getElementById('rebuildReceipt'), { scale: 3, backgroundColor: '#ffffff' }).then(canvas => {
+            const isMobile = detectIsMobile();
+            html2canvas(document.getElementById('rebuildReceipt'), { scale: isMobile ? 2 : 3, backgroundColor: '#ffffff' }).then(canvas => {
                 const link = document.createElement('a'); link.download = `Copy_${no}.png`; link.href = canvas.toDataURL(); link.click();
             });
         }
